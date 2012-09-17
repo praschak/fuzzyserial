@@ -16,6 +16,12 @@ import java.io.OutputStreamWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A class to handle the connection to an Arduino.
+ * 
+ * @author markus
+ *
+ */
 public class Arduino {
 	
 	private static final Logger log = LoggerFactory.getLogger(Arduino.class);
