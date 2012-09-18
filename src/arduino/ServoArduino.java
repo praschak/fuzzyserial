@@ -1,5 +1,7 @@
 package arduino;
 
+import java.io.IOException;
+
 import model.Spike;
 
 import org.slf4j.Logger;
@@ -24,7 +26,7 @@ public class ServoArduino extends Arduino implements Runnable {
 
 	@Override
 	public void run() {
-		//connect();
+		connect();
 
 		try {
 			while (!Thread.interrupted()) {
@@ -32,15 +34,19 @@ public class ServoArduino extends Arduino implements Runnable {
 					spike.wait();
 				}
 				
-				int spikeValue = spike.getSpikeValue();
+				String spikeValue = String.format("%03d", spike.getSpikeValue());
 				log.debug("Sending " + spikeValue);
+				writer.write(spikeValue);
+				writer.flush();
 			}
 		} catch (InterruptedException e) {
 			// Ignore
+		} catch (IOException e) {
+			log.error("Lost connection", e);
 		}
 		
 		log.debug("Interrupted, exiting.");
-		//disconnect();
+		disconnect();
 	}
 
 }

@@ -11,7 +11,7 @@ import java.util.Queue;
  */
 public class ApproachValue {
 	
-	private static final int QUEUE_LIMIT = 50;
+	private static final int QUEUE_LIMIT = 100;
 
 	private Queue<Integer> queue = new LinkedList<Integer>();
 	

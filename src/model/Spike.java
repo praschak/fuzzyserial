@@ -10,7 +10,7 @@ public class Spike implements Runnable {
 	
 	private static final long
 			SPIKE_OUT_TIME = 3000,
-			SLEEP_TIME = 20;
+			SLEEP_TIME = 40;
 	
 	private static final int
 			MAX = 100,
@@ -19,6 +19,7 @@ public class Spike implements Runnable {
 	
 	
 	private int spikeValue = MIN;
+	private int x = MIN;
 
 	private long lastSpikeTime = 0;
 	
@@ -27,13 +28,15 @@ public class Spike implements Runnable {
 	}
 	
 	public synchronized void spike() {
-		setSpikeValue(MAX);
+		x = MAX;
 		lastSpikeTime = System.currentTimeMillis();
+		calculateSpikeValue();
 	}
 	
-	private synchronized void setSpikeValue(int spikeValue) {
-		if (spikeValue != this.spikeValue) {
-			this.spikeValue = spikeValue > MAX ? MAX : spikeValue;
+	private synchronized void calculateSpikeValue() {
+		int newSpikeValue = scaleValue(x);
+		if (newSpikeValue != spikeValue) {
+			spikeValue = newSpikeValue;
 			notifyAll();
 		}
 	}
@@ -41,8 +44,9 @@ public class Spike implements Runnable {
 	@Override
 	public void run() {
 		while (!Thread.interrupted()) {
-			if (spikeValue > MIN && System.currentTimeMillis() - lastSpikeTime > SPIKE_OUT_TIME) {
-				setSpikeValue(spikeValue - STEP);
+			if (x > MIN && System.currentTimeMillis() - lastSpikeTime > SPIKE_OUT_TIME) {
+				x -= STEP;
+				calculateSpikeValue();
 			}
 			
 			try {
@@ -50,6 +54,11 @@ public class Spike implements Runnable {
 			} catch (InterruptedException e) {
 			}
 		}
+	}
+	
+	private int scaleValue(int linearValue) {
+		// 50*(tanh(x/25-2)+1)
+		return (int) (50 * ( Math.tanh(linearValue / 25d - 2) + 1) );
 	}
 
 }

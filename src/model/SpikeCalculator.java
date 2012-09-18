@@ -12,7 +12,7 @@ public class SpikeCalculator implements Runnable {
 	
 	private static final Logger log = LoggerFactory.getLogger(SpikeCalculator.class);
 	
-	private static final int LIMIT = 8;
+	private static final int LIMIT = 10;
 
 	private final ApproachValue approachValue;
 	private final Spike spike;

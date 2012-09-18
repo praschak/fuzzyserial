@@ -44,7 +44,7 @@ public class Main {
 		SpikeCalculator spikeCalculator = new SpikeCalculator(approachValue, spike);
 		
 		SensorArduino sensorArduino = new SensorArduino("/dev/tty.usbmodemfa131", approachValue);
-		ServoArduino servoArduino = new ServoArduino("test", spike);
+		ServoArduino servoArduino = new ServoArduino("/dev/tty.usbmodemfd121", spike);
 		
 		threadPool.execute(spike);
 		threadPool.execute(sensorArduino);
