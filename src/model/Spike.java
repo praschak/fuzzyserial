@@ -32,8 +32,10 @@ public class Spike implements Runnable {
 	}
 	
 	private synchronized void setSpikeValue(int spikeValue) {
-		this.spikeValue = spikeValue > MAX ? MAX : spikeValue;
-		notifyAll();
+		if (spikeValue != this.spikeValue) {
+			this.spikeValue = spikeValue > MAX ? MAX : spikeValue;
+			notifyAll();
+		}
 	}
 
 	@Override

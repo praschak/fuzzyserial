@@ -24,21 +24,16 @@ public class SpikeCalculator implements Runnable {
 
 	@Override
 	public void run() {
-		boolean limited = false;
-		
 		try {
 			while (!Thread.interrupted()) {
 				synchronized (approachValue) {
 					while(approachValue.getApproachValue() < LIMIT) {
-						limited = false;
 						approachValue.wait();
 					}
 				}
 				
-				if (!limited) {
-					limited = true;
-					spike.spike();
-				}
+				// Do spiking every time we are over limit, continuously
+				spike.spike();
 			}
 		} catch (InterruptedException e) {
 			// Ignore
