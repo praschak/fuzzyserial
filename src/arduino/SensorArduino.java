@@ -3,6 +3,7 @@ package arduino;
 import java.io.IOException;
 
 import model.ApproachValue;
+import model.TouchValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +20,12 @@ public class SensorArduino extends Arduino implements Runnable {
 
 	private final ApproachValue approachValue;
 
-	public SensorArduino(String portname, ApproachValue approachValue) {
+	private final TouchValue touchValue;
+
+	public SensorArduino(String portname, ApproachValue approachValue, TouchValue touchValue) {
 		super(portname);
 		this.approachValue = approachValue;
+		this.touchValue = touchValue;
 	}
 
 	@Override
@@ -32,10 +36,17 @@ public class SensorArduino extends Arduino implements Runnable {
 			while (!Thread.interrupted()) {
 				String line = reader.readLine();
 				log.trace("Read: " + line);
+				String[] split = line.split(",");
+				if (split.length < 2) {
+					continue;
+				}
 				
 				try {
-					int distance = Integer.parseInt(line);
+					int distance = Integer.parseInt(split[0]);
+					int touch =  Integer.parseInt(split[1]);
+					
 					approachValue.addMeasurement(distance);
+					touchValue.addMeasurement(touch);
 				} catch (NumberFormatException e) {
 					log.warn("Number format exception, ignoring.");
 				}

@@ -2,6 +2,7 @@ package main;
 
 import gui.SpikeMeter;
 import gui.ApproachMeter;
+import gui.TouchMeter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import javax.swing.SwingUtilities;
 import model.ApproachValue;
 import model.Spike;
 import model.SpikeCalculator;
+import model.TouchValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +41,12 @@ public class Main {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		
 		final ApproachValue approachValue = new ApproachValue();
+		final TouchValue touchValue = new TouchValue();
 		final Spike spike = new Spike();
 		
 		SpikeCalculator spikeCalculator = new SpikeCalculator(approachValue, spike);
 		
-		SensorArduino sensorArduino = new SensorArduino("/dev/tty.usbmodemfa131", approachValue);
+		SensorArduino sensorArduino = new SensorArduino("/dev/tty.usbmodemfa131", approachValue, touchValue);
 		ServoArduino servoArduino = new ServoArduino("/dev/tty.usbmodemfd121", spike);
 		
 		threadPool.execute(spike);
@@ -61,8 +64,10 @@ public class Main {
 				frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.LINE_AXIS));
 				
 				final ApproachMeter approachMeter = new ApproachMeter(approachValue);
+				final TouchMeter touchMeter = new TouchMeter(touchValue);
 				final SpikeMeter spikeMeter = new SpikeMeter(spike);
 				frame.getContentPane().add(approachMeter);
+				frame.getContentPane().add(touchMeter);
 				frame.getContentPane().add(spikeMeter);
 				
 				frame.pack();
@@ -79,6 +84,24 @@ public class Main {
 									approachValue.wait();
 								}
 								approachMeter.repaint();
+							}
+						} catch (InterruptedException e) {
+							// Ignore
+						}
+						log.debug("Interrupted, exiting.");
+					}
+				});
+				
+				threadPool.execute(new Runnable() {
+					
+					@Override
+					public void run() {
+						try {
+							while (!Thread.interrupted()) {
+								synchronized (touchValue) {
+									touchValue.wait();
+								}
+								touchMeter.repaint();
 							}
 						} catch (InterruptedException e) {
 							// Ignore

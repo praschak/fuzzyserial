@@ -34,7 +34,7 @@ public class ServoArduino extends Arduino implements Runnable {
 					spike.wait();
 				}
 				
-				String spikeValue = String.format("%03d", spike.getSpikeValue());
+				String spikeValue = String.format("%03d0", spike.getSpikeValue());
 				log.debug("Sending " + spikeValue);
 				writer.write(spikeValue);
 				writer.flush();
