@@ -3,7 +3,7 @@ package model;
 public class Vibrator implements Runnable {
 	
 	private static final long
-			ACTIVITY_TIMEOUT = 3000,
+			ACTIVITY_TIMEOUT = 4000,
 			SLEEP_TIME = 100;
 	
 	private long lastActivityTime = 0;

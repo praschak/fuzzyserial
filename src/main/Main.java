@@ -49,7 +49,7 @@ public class Main {
 		final Vibrator vibrator = new Vibrator();
 		
 		SpikeCalculator spikeCalculator = new SpikeCalculator(approachValue, spike);
-		VibratorCalculator vibratorCalculator = new VibratorCalculator(touchValue, vibrator);
+		VibratorCalculator vibratorCalculator = new VibratorCalculator(spike, touchValue, vibrator);
 		
 		SensorArduino sensorArduino = new SensorArduino("/dev/tty.usbmodemfa131", approachValue, touchValue);
 		ServoArduino servoArduino = new ServoArduino("/dev/tty.usbmodemfd121", spike, vibrator);

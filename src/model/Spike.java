@@ -23,11 +23,18 @@ public class Spike implements Runnable {
 
 	private long lastSpikeTime = 0;
 	
+	private boolean spiked = false;
+	
+	public synchronized boolean isSpiked() {
+		return spiked;
+	}
+	
 	public synchronized int getValue() {
 		return spikeValue;
 	}
 	
 	public synchronized void spike() {
+		spiked = true;
 		x = MAX;
 		lastSpikeTime = System.currentTimeMillis();
 		calculateValue();
@@ -46,6 +53,7 @@ public class Spike implements Runnable {
 		while (!Thread.interrupted()) {
 			synchronized (this) {
 				if (x > MIN && System.currentTimeMillis() - lastSpikeTime > SPIKE_OUT_TIME) {
+					spiked = false;
 					x -= STEP;
 					calculateValue();
 				}
