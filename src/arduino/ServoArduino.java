@@ -18,10 +18,34 @@ public class ServoArduino extends Arduino implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(ServoArduino.class);
 
 	private Spike spike;
+	
+	private Object sync = new Object();
 
-	public ServoArduino(String portname, Spike spike) {
+	public ServoArduino(String portname, final Spike spike) {
 		super(portname);
 		this.spike = spike;
+		
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					while (!Thread.interrupted()) {
+						synchronized (spike) {
+							spike.wait();
+						}
+						
+						synchronized (sync) {
+							sync.notifyAll();
+						}
+					}
+				} catch (InterruptedException e) {
+					// Ignore
+				}
+				log.debug("Interrupted, exiting.");
+			}
+			
+		}).start();
 	}
 
 	@Override
@@ -30,8 +54,8 @@ public class ServoArduino extends Arduino implements Runnable {
 
 		try {
 			while (!Thread.interrupted()) {
-				synchronized (spike) {
-					spike.wait();
+				synchronized (sync) {
+					sync.wait();
 				}
 				
 				String spikeValue = String.format("%03d0", spike.getSpikeValue());
