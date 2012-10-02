@@ -3,6 +3,7 @@ package main;
 import gui.SpikeMeter;
 import gui.ApproachMeter;
 import gui.TouchMeter;
+import gui.VibratorDisplay;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import model.ApproachValue;
 import model.Spike;
 import model.SpikeCalculator;
 import model.TouchValue;
+import model.Vibrator;
+import model.VibratorCalculator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,16 +46,20 @@ public class Main {
 		final ApproachValue approachValue = new ApproachValue();
 		final TouchValue touchValue = new TouchValue();
 		final Spike spike = new Spike();
+		final Vibrator vibrator = new Vibrator();
 		
 		SpikeCalculator spikeCalculator = new SpikeCalculator(approachValue, spike);
+		VibratorCalculator vibratorCalculator = new VibratorCalculator(touchValue, vibrator);
 		
 		SensorArduino sensorArduino = new SensorArduino("/dev/tty.usbmodemfa131", approachValue, touchValue);
-		ServoArduino servoArduino = new ServoArduino("/dev/tty.usbmodemfd121", spike);
+		ServoArduino servoArduino = new ServoArduino("/dev/tty.usbmodemfd121", spike, vibrator);
 		
 		threadPool.execute(spike);
+		threadPool.execute(vibrator);
 		threadPool.execute(sensorArduino);
 		threadPool.execute(servoArduino);
 		threadPool.execute(spikeCalculator);
+		threadPool.execute(vibratorCalculator);
 		
 		SwingUtilities.invokeLater(new Runnable() {
 
@@ -66,9 +73,11 @@ public class Main {
 				final ApproachMeter approachMeter = new ApproachMeter(approachValue);
 				final TouchMeter touchMeter = new TouchMeter(touchValue);
 				final SpikeMeter spikeMeter = new SpikeMeter(spike);
+				final VibratorDisplay vibratorDisplay = new VibratorDisplay(vibrator);
 				frame.getContentPane().add(approachMeter);
 				frame.getContentPane().add(touchMeter);
 				frame.getContentPane().add(spikeMeter);
+				frame.getContentPane().add(vibratorDisplay);
 				
 				frame.pack();
 				frame.setVisible(true);
@@ -120,6 +129,24 @@ public class Main {
 										spike.wait();
 								}
 								spikeMeter.repaint();
+							}
+						} catch (InterruptedException e) {
+							// Ignore
+						}
+						log.debug("Interrupted, exiting.");
+					}
+				});
+				
+				threadPool.execute(new Runnable() {
+					
+					@Override
+					public void run() {
+						try {
+							while (!Thread.interrupted()) {
+								synchronized (vibrator) {
+									vibrator.wait();
+								}
+								vibratorDisplay.repaint();
 							}
 						} catch (InterruptedException e) {
 							// Ignore

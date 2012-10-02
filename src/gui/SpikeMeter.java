@@ -38,7 +38,7 @@ public class SpikeMeter extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		int height = HEIGHT - spike.getSpikeValue();
+		int height = HEIGHT - spike.getValue();
 		
 		g.setColor(Color.RED);
 		g.fillPolygon(new int[] {0, WIDTH / 2, WIDTH}, new int[] {HEIGHT, height, HEIGHT}, 3);

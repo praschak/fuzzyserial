@@ -3,6 +3,7 @@ package arduino;
 import java.io.IOException;
 
 import model.Spike;
+import model.Vibrator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +18,13 @@ public class ServoArduino extends Arduino implements Runnable {
 	
 	private static final Logger log = LoggerFactory.getLogger(ServoArduino.class);
 
-	private Spike spike;
+	private final Spike spike;
+	private final Vibrator vibrator;
 	
-	private Object sync = new Object();
-
-	public ServoArduino(String portname, final Spike spike) {
+	public ServoArduino(String portname, final Spike spike, final Vibrator vibrator) {
 		super(portname);
 		this.spike = spike;
+		this.vibrator = vibrator;
 		
 		new Thread(new Runnable() {
 
@@ -35,8 +36,30 @@ public class ServoArduino extends Arduino implements Runnable {
 							spike.wait();
 						}
 						
-						synchronized (sync) {
-							sync.notifyAll();
+						synchronized (ServoArduino.this) {
+							ServoArduino.this.notifyAll();
+						}
+					}
+				} catch (InterruptedException e) {
+					// Ignore
+				}
+				log.debug("Interrupted, exiting.");
+			}
+			
+		}).start();
+		
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					while (!Thread.interrupted()) {
+						synchronized (vibrator) {
+							vibrator.wait();
+						}
+						
+						synchronized (ServoArduino.this) {
+							ServoArduino.this.notifyAll();
 						}
 					}
 				} catch (InterruptedException e) {
@@ -54,13 +77,13 @@ public class ServoArduino extends Arduino implements Runnable {
 
 		try {
 			while (!Thread.interrupted()) {
-				synchronized (sync) {
-					sync.wait();
+				synchronized (this) {
+					wait();
 				}
 				
-				String spikeValue = String.format("%03d0", spike.getSpikeValue());
-				log.debug("Sending " + spikeValue);
-				writer.write(spikeValue);
+				String sendValue = String.format("%03d%d", spike.getValue(), vibrator.getState().getMappedValue());
+				log.debug("Sending " + sendValue);
+				writer.write(sendValue);
 				writer.flush();
 			}
 		} catch (InterruptedException e) {

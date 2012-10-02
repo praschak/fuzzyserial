@@ -38,7 +38,7 @@ public class TouchMeter extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		int value = touchValue.getTouchValue();
+		int value = touchValue.getValue();
 		
 		int height = getHeight() * value / TouchValue.MAX;
 		
